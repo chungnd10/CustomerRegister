@@ -1,0 +1,77 @@
+
+<fieldset class="fieldset additional info">
+    <div class="field username required">
+        <label class="label" for="username_customer">
+            <span><?= $block->escapeHtml(__('Username')) ?></span>
+        </label>
+        <div class="control">
+            <input type="text" name="username_customer" id="username_customer"
+                   value=""
+                   title="<?= $block->escapeHtmlAttr(__('Username')) ?>" class="input-text"
+                   data-mage-init='{"mage/trim-input":{}}'
+                   data-validate="{required:true, 'username':true}">
+        </div>
+    </div>
+
+    <div class="field phone_number required">
+        <label class="label" for="phone_number">
+            <span><?= $block->escapeHtml(__('Phone number')) ?></span>
+        </label>
+        <div class="control">
+            <input type="text" name="phone_number" id="phone_number" value=""
+                   title="<?= $block->escapeHtmlAttr(__('Phone number')) ?>" class="input-text"
+                   data-validate="{required:true, 'phonenumber_vietnam':true}">
+        </div>
+    </div>
+    <div class="field required">
+        <label class="label" for="tax_code">
+            <span>Are you a personal or a business?</span>
+        </label>
+        <div class="control">
+            <input type="radio" id="personal" name="type_customer" checked value="personal">
+            <label for="male">Personal</label><br>
+
+            <input type="radio" id="business" name="type_customer" value="business">
+            <label for="male">Business</label><br>
+        </div>
+    </div>
+
+    <div class="field tax_code required" id="field_tax_code" style="display: none">
+        <label class="label" for="tax_code">
+            <span><?= $block->escapeHtml(__('Tax code')) ?></span>
+        </label>
+        <div class="control">
+            <input type="text" name="tax_code" id="tax_code" value=""
+                   title="<?= $block->escapeHtmlAttr(__('Tax code')) ?>"
+                   class="input-text">
+        </div>
+    </div>
+</fieldset>
+
+
+<script>
+    require([
+        "jquery"
+    ], function ($) {
+        $(document).ready(function () {
+            $('input[type=radio][name=type_customer]').change(function () {
+                if (this.value === 'business') {
+                    $("#field_tax_code").removeAttr('style');
+                    $("#field_tax_code").slideDown();
+                } else {
+                    $("#field_tax_code").css("display", "none");
+                }
+            });
+        });
+    });
+</script>
+
+<script type="text/x-magento-init">
+   {
+       "*": {
+           "Fastest_CustomerRegister/js/validate-username": {},
+           "Fastest_CustomerRegister/js/validate-phonenumber": {}
+       }
+   }
+</script>
+
