@@ -349,7 +349,46 @@ class CreatePost extends AbstractAccount implements CsrfAwareActionInterface, Ht
         }
 
         $this->session->regenerateId();
+
+        $username_customer = $this->getRequest()->getParam('username_customer');
+        $phone_number = $this->getRequest()->getParam('phone_number');
+
+        $resource = $this->_objectManager->create('\Magento\Framework\App\ResourceConnection');
+        $connection = $resource->getConnection(\Magento\Framework\App\ResourceConnection::DEFAULT_CONNECTION);
+        $url_create_page = $this->resultRedirectFactory->create()
+                ->setUrl($this->_redirect
+                    ->error($this->urlModel->getUrl('*/*/create', ['_secure' => true])));
+
+
+        // Check exist username
+        $sql_get_attribute_id_username = "select attribute_id from eav_attribute where attribute_code = 'username_customer'";
+        $attribute_id_username = $connection->fetchOne($sql_get_attribute_id_username);
+        $sql_get_custom_attribute = "SELECT * FROM customer_entity_varchar where attribute_id = " . $attribute_id_username . " and value = '". $username_customer . "'";
+        $value_attribute_username = $connection->fetchAll($sql_get_custom_attribute);
+
+        // If exist username
+        if (!empty($value_attribute_username)) {
+            $this->messageManager->addErrorMessage(__('Username is already in use.'));
+            $this->session->setCustomerFormData($this->getRequest()->getPostValue());
+            return $url_create_page;
+
+        } else {
+            // Check exist phone number
+            $sql_get_attribute_id_phone_number = "select attribute_id from eav_attribute where attribute_code = 'phone_number'";
+            $attribute_id_phone_number = $connection->fetchOne($sql_get_attribute_id_phone_number);
+            $sql_get_custom_attribute = "SELECT * FROM customer_entity_varchar where attribute_id = " . $attribute_id_phone_number . " and value = '" . $phone_number . "'";
+            $value_attribute_phone_number = $connection->fetchAll($sql_get_custom_attribute);
+
+            // If exist phone number
+            if (!empty($value_attribute_phone_number)) {
+                $this->messageManager->addErrorMessage(__('Phone number is already in use.'));
+                $this->session->setCustomerFormData($this->getRequest()->getPostValue());
+                return $url_create_page;
+            }
+        }
+
         try {
+
             $address = $this->extractAddress();
             $addresses = $address === null ? [] : [$address];
             $customer = $this->customerExtractor->extract('customer_account_create', $this->_request);

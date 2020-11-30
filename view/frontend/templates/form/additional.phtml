@@ -1,15 +1,16 @@
-
 <fieldset class="fieldset additional info">
     <div class="field username required">
         <label class="label" for="username_customer">
             <span><?= $block->escapeHtml(__('Username')) ?></span>
         </label>
         <div class="control">
+            <i class='fas'></i>
             <input type="text" name="username_customer" id="username_customer"
                    value=""
                    title="<?= $block->escapeHtmlAttr(__('Username')) ?>" class="input-text"
                    data-mage-init='{"mage/trim-input":{}}'
                    data-validate="{required:true, 'username':true}">
+            <div class="error" id="username_customer_ajax-error" ></div>
         </div>
     </div>
 
@@ -18,9 +19,11 @@
             <span><?= $block->escapeHtml(__('Phone number')) ?></span>
         </label>
         <div class="control">
+            <i class='fas' ></i>
             <input type="text" name="phone_number" id="phone_number" value=""
                    title="<?= $block->escapeHtmlAttr(__('Phone number')) ?>" class="input-text"
                    data-validate="{required:true, 'phonenumber_vietnam':true}">
+            <div class="error" id="phone_number_ajax-error" ></div>
         </div>
     </div>
     <div class="field required">
@@ -36,7 +39,7 @@
         </div>
     </div>
 
-    <div class="field tax_code required" id="field_tax_code" style="display: none">
+    <div class="field tax_code" id="field_tax_code" style="display: none">
         <label class="label" for="tax_code">
             <span><?= $block->escapeHtml(__('Tax code')) ?></span>
         </label>
@@ -47,6 +50,107 @@
         </div>
     </div>
 </fieldset>
+
+<script type="text/javascript">
+    require(["jquery"], function ($) {
+        $(document).ready(function () {
+
+            function addIconErr(element) {
+                element.removeClass('fa-check-circle');
+                element.addClass('fa-times-circle')
+            }
+
+            function addIconSuccess(element) {
+                element.removeClass('fa-times-circle');
+                element.addClass('fa-check-circle')
+            }
+
+            function disableButtonSubmit() {
+                var checkEmptyUsername = $("#username_customer_ajax-error").text();
+                var checkEmptyPhone = $("#phone_number_ajax-error").text();
+
+                if (checkEmptyUsername != '' || checkEmptyPhone != '') {
+                    $('button.submit').attr('disabled', true);
+                } else {
+                    $('button.submit').removeAttr('disabled');
+                }
+            }
+
+            // Check exits username
+            var customurl = "<?php echo $this->getUrl() . 'customer/ajax/verifyUsername'?>";
+            $("#username_customer").change(function () {
+                var value = $("#username_customer").val();
+                $.ajax({
+                    url: customurl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        username_customer: value
+                    },
+                    beforeSend: function() {
+                        $('button.submit').attr('disabled', true);
+                    },
+                    complete: function (response) {
+                        var showErrUsername = $("#username_customer_ajax-error");
+                        var iconMessUsername = $(".field.username .control .fas");
+
+                        if (response.responseJSON.success === false) {
+                            showErrUsername.text(response.responseJSON.message);
+                            addIconErr(iconMessUsername);
+                            showErrUsername.slideDown();
+                        } else {
+                            addIconSuccess(iconMessUsername);
+                            showErrUsername.slideUp();
+                            showErrUsername.text('');
+                        }
+                        console.log(response.responseJSON);
+                        disableButtonSubmit();
+                    },
+                    error: function (xhr, status, errorThrown) {
+                        console.log('Error happens. Try again.');
+                    }
+                });
+            });
+
+            // Check exist phone number
+            var verifyPhonenumberUrl = "<?php echo $this->getUrl() . 'customer/ajax/verifyPhonenumber'?>";
+            $("#phone_number").change(function () {
+                var value = $("#phone_number").val();
+                $.ajax({
+                    url: verifyPhonenumberUrl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        phone_number: value
+                    },
+                    beforeSend: function () {
+                        $('button.submit').attr('disabled', true);
+                    },
+                    complete: function (response) {
+                        var showErrPhone = $("#phone_number_ajax-error");
+                        var iconMessPhone = $(".field.phone_number .control .fas");
+
+                        if (response.responseJSON.success === false) {
+                            showErrPhone.text(response.responseJSON.message);
+                            addIconErr(iconMessPhone);
+                            showErrPhone.slideDown();
+                        } else {
+                            addIconSuccess(iconMessPhone);
+                            showErrPhone.slideUp();
+                            showErrPhone.text('');
+                        }
+                        console.log(response.responseJSON);
+                        disableButtonSubmit();
+                    },
+                    error: function (xhr, status, errorThrown) {
+                        console.log('Error happens. Try again.');
+                    }
+                });
+            });
+
+        });
+    });
+</script>
 
 
 <script>
@@ -65,6 +169,7 @@
         });
     });
 </script>
+
 
 <script type="text/x-magento-init">
    {

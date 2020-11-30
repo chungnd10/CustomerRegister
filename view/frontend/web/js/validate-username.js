@@ -15,7 +15,7 @@ define([
                     return true;
                 }
             },
-            $.mage.__("The username consists of lowercase letters and numbers, ranging from 6-20 characters.")
+            $.mage.__("Tên tài khoản bao gồm các chữ cái viết thường và số, từ 6-20 ký tự.")
         );
     }
 });

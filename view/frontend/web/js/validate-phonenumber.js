@@ -15,7 +15,7 @@ define([
                     return true;
                 }
             },
-            $.mage.__("Phone number incorrect format.")
+            $.mage.__("Bạn phải nhập số điện thoại bắt đầu bằng 02 hoặc 03, 05, 07, 08, 09 và dài từ 10-11 ký tự")
         );
     }
 });
