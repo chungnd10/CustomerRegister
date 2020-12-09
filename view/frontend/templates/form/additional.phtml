@@ -1,13 +1,17 @@
+<?php
+$blockObj= $block->getLayout()->createBlock('Fastest\CustomerRegister\Block\CustomerGroups');
+$groups = $blockObj->getCustomerGroup();
+?>
+
 <fieldset class="fieldset additional info">
     <div class="field username required">
         <label class="label" for="username_customer">
             <span><?= $block->escapeHtml(__('Username')) ?></span>
         </label>
         <div class="control">
-            <i class='fas'></i>
             <input type="text" name="username_customer" id="username_customer"
                    value=""
-                   title="<?= $block->escapeHtmlAttr(__('Username')) ?>" class="input-text"
+                   title="<?= $block->escapeHtmlAttr(__('Username')) ?>" class="input-text v-validate"
                    data-mage-init='{"mage/trim-input":{}}'
                    data-validate="{required:true, 'username':true}">
             <div class="error" id="username_customer_ajax-error" ></div>
@@ -19,35 +23,60 @@
             <span><?= $block->escapeHtml(__('Phone number')) ?></span>
         </label>
         <div class="control">
-            <i class='fas' ></i>
             <input type="text" name="phone_number" id="phone_number" value=""
-                   title="<?= $block->escapeHtmlAttr(__('Phone number')) ?>" class="input-text"
+                   title="<?= $block->escapeHtmlAttr(__('Phone number')) ?>" class="input-text v-validate"
                    data-validate="{required:true, 'phonenumber_vietnam':true}">
             <div class="error" id="phone_number_ajax-error" ></div>
         </div>
     </div>
     <div class="field required">
         <label class="label" for="tax_code">
-            <span>Are you a personal or a business?</span>
+            <span>Bạn là cá nhân hay doanh nghiệp?</span>
         </label>
         <div class="control">
-            <input type="radio" id="personal" name="type_customer" checked value="personal">
-            <label for="male">Personal</label><br>
-
-            <input type="radio" id="business" name="type_customer" value="business">
-            <label for="male">Business</label><br>
+            <input type="radio" id="personal" name="type_customer" checked value="1">
+            <label for="male">Cá nhân</label><br>
+            <?php foreach ($groups as $key => $data) { ?>
+                <?php if ($data['label'] == 'Business'): ?>
+                    <input type="radio" id="business" name="type_customer" class="v-validate"
+                           data-value="business" value="<?= $data['value'] ?>">
+                <?php endif;?>
+            <?php } ?>
+            <label for="male">Doanh nghiệp</label><br>
         </div>
     </div>
 
-    <div class="field tax_code" id="field_tax_code" style="display: none">
+    <div class="field tax_code required" id="field_tax_code" style="display: none">
         <label class="label" for="tax_code">
-            <span><?= $block->escapeHtml(__('Tax code')) ?></span>
+            <span><?= $block->escapeHtml(__('Mã số thuế')) ?></span>
         </label>
         <div class="control">
-            <input type="text" name="tax_code" id="tax_code" value=""
+            <input type="text" name="tax_code" id="tax_code"
+                   value=""
+                   data-validate="{'tax_code':true}"
                    title="<?= $block->escapeHtmlAttr(__('Tax code')) ?>"
-                   class="input-text">
+                   class="input-text v-validate">
         </div>
+    </div>
+
+    <div class="field">
+        <div class="control">
+            <input type="checkbox" id="is_agency" name="is_agency[]" value="1">
+            <label for="is_agency">Tôi muốn làm đại lý cho Fastest</label><br>
+        </div>
+    </div>
+
+    <div class="field note required" id="field_note" style="display: none">
+        <label class="label" for="note">
+            <span><?= $block->escapeHtml(__('Ghi chú')) ?></span>
+        </label>
+        <div class="control">
+            <textarea name="agency_note" id="note" data-validate="{'note':true}" title="<?= $block->escapeHtmlAttr(__('Ghi chú')) ?>"
+                      class="input-text v-validate" rows="5"></textarea>
+        </div>
+        <i class="question">
+            * Vui lòng cho chúng tôi biết lĩnh vực kinh doanh của bạn là gì, bạn muốn làm đại lý cho sản phẩm nào, địa chỉ công ty bạn ở đâu?
+        </i>
     </div>
 </fieldset>
 
@@ -55,16 +84,15 @@
     require(["jquery"], function ($) {
         $(document).ready(function () {
 
-            function addIconErr(element) {
-                element.removeClass('fa-check-circle');
-                element.addClass('fa-times-circle')
-            }
+            // Add class v-validate
+            $('#firstname').addClass('v-validate');
+            $('#lastname').addClass('v-validate');
+            $('#email_address').addClass('v-validate');
+            $('#password').addClass('v-validate');
+            $('#password-confirmation').addClass('v-validate');
 
-            function addIconSuccess(element) {
-                element.removeClass('fa-times-circle');
-                element.addClass('fa-check-circle')
-            }
 
+            // Disable button submit
             function disableButtonSubmit() {
                 var checkEmptyUsername = $("#username_customer_ajax-error").text();
                 var checkEmptyPhone = $("#phone_number_ajax-error").text();
@@ -77,11 +105,11 @@
             }
 
             // Check exits username
-            var customurl = "<?php echo $this->getUrl() . 'customer/ajax/verifyUsername'?>";
+            var verifyUsername = "<?php echo $this->getUrl() . 'customer/ajax/verifyUsername'?>";
             $("#username_customer").change(function () {
                 var value = $("#username_customer").val();
                 $.ajax({
-                    url: customurl,
+                    url: verifyUsername,
                     type: 'POST',
                     dataType: 'json',
                     data: {
@@ -92,18 +120,15 @@
                     },
                     complete: function (response) {
                         var showErrUsername = $("#username_customer_ajax-error");
-                        var iconMessUsername = $(".field.username .control .fas");
 
-                        if (response.responseJSON.success === false) {
+                        if (response.responseJSON.success == 'false'  && response.responseJSON.message != '') {
                             showErrUsername.text(response.responseJSON.message);
-                            addIconErr(iconMessUsername);
                             showErrUsername.slideDown();
                         } else {
-                            addIconSuccess(iconMessUsername);
                             showErrUsername.slideUp();
                             showErrUsername.text('');
                         }
-                        console.log(response.responseJSON);
+                        // console.log(response.responseJSON);
                         disableButtonSubmit();
                     },
                     error: function (xhr, status, errorThrown) {
@@ -128,18 +153,16 @@
                     },
                     complete: function (response) {
                         var showErrPhone = $("#phone_number_ajax-error");
-                        var iconMessPhone = $(".field.phone_number .control .fas");
 
-                        if (response.responseJSON.success === false) {
+                        if (response.responseJSON.success == 'false'  && response.responseJSON.message != '') {
                             showErrPhone.text(response.responseJSON.message);
-                            addIconErr(iconMessPhone);
                             showErrPhone.slideDown();
                         } else {
-                            addIconSuccess(iconMessPhone);
                             showErrPhone.slideUp();
                             showErrPhone.text('');
                         }
-                        console.log(response.responseJSON);
+
+                        // console.log(response.responseJSON);
                         disableButtonSubmit();
                     },
                     error: function (xhr, status, errorThrown) {
@@ -148,23 +171,26 @@
                 });
             });
 
-        });
-    });
-</script>
-
-
-<script>
-    require([
-        "jquery"
-    ], function ($) {
-        $(document).ready(function () {
+            // Display input tax code
             $('input[type=radio][name=type_customer]').change(function () {
-                if (this.value === 'business') {
+                if ($(this).attr("data-value") === 'business') {
                     $("#field_tax_code").removeAttr('style');
                     $("#field_tax_code").slideDown();
                 } else {
                     $("#field_tax_code").css("display", "none");
                 }
+            });
+
+            //Display input note
+            $("#is_agency").change(function() {
+                var atLeastOneIsChecked = $('input[name="is_agency[]"]:checked').length > 0;
+                if (atLeastOneIsChecked === true) {
+                    $("#field_note").removeAttr('style');
+                    $("#field_note").slideDown();
+                } else {
+                    $("#field_note").css("display", "none");
+                }
+
             });
         });
     });
@@ -176,7 +202,10 @@
        "*": {
            "Fastest_CustomerRegister/js/validate-username": {},
            "Fastest_CustomerRegister/js/validate-phonenumber": {}
-       }
+       },
+       ".v-validate": {
+            "Fastest_CustomerRegister/js/custom": {}
+        }
    }
 </script>
 

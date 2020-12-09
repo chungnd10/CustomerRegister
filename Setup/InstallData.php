@@ -26,9 +26,7 @@ class InstallData implements \Magento\Framework\Setup\InstallDataInterface
     public function install(ModuleDataSetupInterface $setup, ModuleContextInterface $context)
     {
         $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
-
         $eavSetup->removeAttribute(Customer::ENTITY, "username_customer");
-
         $attributeSetId = $eavSetup->getDefaultAttributeSetId(Customer::ENTITY);
         $attributeGroupId = $eavSetup->getDefaultAttributeGroupId(Customer::ENTITY);
 
@@ -40,10 +38,10 @@ class InstallData implements \Magento\Framework\Setup\InstallDataInterface
             'required' => true,
             'visible' => true,
             'user_defined' => true,
-            'sort_order' => 700,
-            'position' => 700,
+            'sort_order' => 500,
+            'position' => 500,
             'system' => 0,
-            'unique' => true,
+            'unique' => true
         ]);
 
         $username = $this->eavConfig->getAttribute(Customer::ENTITY, 'username_customer');
@@ -65,15 +63,12 @@ class InstallData implements \Magento\Framework\Setup\InstallDataInterface
             'customer_account_create',
             'customer_account_edit'
         ]);
-
         $this->attributeResource->save($username);
 
         //------------------------------------------------------------------------------------
 
         $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
-
         $eavSetup->removeAttribute(Customer::ENTITY, "phone_number");
-
         $attributeSetId = $eavSetup->getDefaultAttributeSetId(Customer::ENTITY);
         $attributeGroupId = $eavSetup->getDefaultAttributeGroupId(Customer::ENTITY);
 
@@ -85,10 +80,10 @@ class InstallData implements \Magento\Framework\Setup\InstallDataInterface
             'required' => true,
             'visible' => true,
             'user_defined' => true,
-            'sort_order' => 800,
-            'position' => 800,
+            'sort_order' => 600,
+            'position' => 600,
             'system' => 0,
-            'unique' => true,
+            'unique' => true
         ]);
 
         $phone_number = $this->eavConfig->getAttribute(Customer::ENTITY, 'phone_number');
@@ -100,14 +95,11 @@ class InstallData implements \Magento\Framework\Setup\InstallDataInterface
             'customer_account_create',
             'customer_account_edit'
         ]);
-
         $this->attributeResource->save($phone_number);
 
         //------------------------------------------------------------------------------------
         $eavSetup = $this->eavSetupFactory->create(['setup' => $setup]);
-
         $eavSetup->removeAttribute(Customer::ENTITY, "tax_code");
-
         $attributeSetId = $eavSetup->getDefaultAttributeSetId(Customer::ENTITY);
         $attributeGroupId = $eavSetup->getDefaultAttributeGroupId(Customer::ENTITY);
 
@@ -119,10 +111,10 @@ class InstallData implements \Magento\Framework\Setup\InstallDataInterface
             'required' => false,
             'visible' => true,
             'user_defined' => true,
-            'sort_order' => 900,
-            'position' => 900,
+            'sort_order' => 700,
+            'position' => 700,
             'system' => 0,
-            'unique' => true,
+            'unique' => true
         ]);
 
         $tax_code = $this->eavConfig->getAttribute(Customer::ENTITY, 'tax_code');
@@ -133,7 +125,6 @@ class InstallData implements \Magento\Framework\Setup\InstallDataInterface
             'customer_account_create',
             'customer_account_edit'
         ]);
-
         $this->attributeResource->save($tax_code);
 
     }

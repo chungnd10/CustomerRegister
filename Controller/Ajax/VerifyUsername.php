@@ -48,23 +48,35 @@ class VerifyUsername extends Action
 
         $username_customer = $this->getRequest()->getParam('username_customer');
 
-        // Check exist username
-        $sql_get_attribute_id_username = "select attribute_id from eav_attribute where attribute_code = 'username_customer'";
-        $attribute_id_username = $connection->fetchOne($sql_get_attribute_id_username);
-        $sql_get_custom_attribute = "SELECT * FROM customer_entity_varchar where attribute_id = " . $attribute_id_username . " and value = '". $username_customer . "'";
-        $value_attribute_username = $connection->fetchAll($sql_get_custom_attribute);
+        $pattern = "/^[a-z0-9]{6,20}$/";
 
-        // If exist username
-        if (!empty($value_attribute_username)) {
-            $response['success'] = false;
-            $response['message'] ='Tên tài khoản đã được sử dụng, vui lòng chọn tên khác.';
-        }else{
-            $response['success'] = true;
-            $response['message'] ='Success.';
+        if (preg_match($pattern, $username_customer)) {
+            // Check exist username
+            $sql_get_attribute_id_username = "select attribute_id from eav_attribute where attribute_code = 'username_customer'";
+            $attribute_id_username = $connection->fetchOne($sql_get_attribute_id_username);
+            $sql_get_custom_attribute = "SELECT * FROM customer_entity_varchar where attribute_id = " . $attribute_id_username . " and value = '" . $username_customer . "'";
+            $value_attribute_username = $connection->fetchAll($sql_get_custom_attribute);
+
+            // If exist username
+            if (!empty($value_attribute_username)) {
+                $response['success'] = 'false';
+                $response['message'] = 'Tên tài khoản đã được sử dụng, vui lòng chọn tên khác.';
+            } else {
+                $response['success'] = 'true';
+                $response['message'] = 'Success.';
+            }
+
+            $resultJson->setData($response);
+            return $resultJson;
+        }else {
+            $response['success'] = 'none';
+            $response['message'] = 'Value incorrect format';
+
+            $resultJson->setData($response);
+            return $resultJson;
         }
 
-        $resultJson->setData($response);
-        return $resultJson;
+
     }
 }
 
